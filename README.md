@@ -2,21 +2,25 @@
 
 A custom attribute plugin for Team Fortress 2.
 
+This is alpha quality software, intended as a proof-of-concept.  It may be leaking handles.
+It uses deprecated SourceMod functionality.  It could mangle things I never expected it to.
+
 ## What does this do?
 
-The core plugin (`tf_custom_attributes` provides an extremely simple interface that adds an
-internal `KeyValues` storage to each weapon, which can be used for custom key / value pairs
-(mainly for attributes).
+The core plugin (`tf_custom_attributes`) provides an extremely simple interface to access an
+internal `KeyValues` storage on each weapon, being able to assign custom key/value data (mainly
+for attributes).
 
-This is not a drop-in replacement for the [Custom Weapons] project.  There is yet to be decent
-tooling that supports equipping custom weapons.
+This is not a drop-in replacement for the [Custom Weapons] project.  Howevern, the tooling is
+there for plugin authors to spawn and attach their own `KeyValues` structure on weapons &mdash;
+someone just needs to build it.
 
 [Custom Weapons]: https://forums.alliedmods.net/showthread.php?t=285258
 
 ## How it works
 
 This plugin leverages the existing attributes system (using TF2Attributes), packing a KeyValues
-handle into an unused attribute.  This allows attributes to persist through weapon drops.
+handle into a benign, unused attribute.  This allows attributes to persist through weapon drops.
 
 ## Writing attribute plugins
 
