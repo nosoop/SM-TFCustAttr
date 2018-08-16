@@ -1,0 +1,14 @@
+"Games"
+{
+	"tf"
+	{
+		"Signatures"
+		{
+			"CTFMinigun::WindDown()"
+			{
+				"library"	"server"
+				"linux"		"@_ZN10CTFMinigun8WindDownEv"
+			}
+		}
+	}
+}
