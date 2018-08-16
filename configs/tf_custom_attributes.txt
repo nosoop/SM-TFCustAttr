@@ -1,0 +1,30 @@
+// Custom Attribute Manager sample file
+// 
+// This configuration file attaches custom attributes to weapons based on definition index.
+
+"Custom Attributes"
+{
+	// Cloak and Dagger
+	"60"
+	{
+		"cloak decrease"			"1"
+	}
+	
+	// Rocket Jumper
+	"237"
+	{
+		"quack on crit check"		"1"
+	}
+	
+	// Disciplinary Action
+	"447"
+	{
+		"quack on crit check"		"1"
+	}
+	
+	// Huo-Long Heater
+	"811"
+	{
+		"minigun winddown boost duration"		"5.0"
+	}
+}
