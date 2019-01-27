@@ -7,20 +7,24 @@ It uses deprecated SourceMod functionality.  It could mangle things I never expe
 
 ## What does this do?
 
-The core plugin (`tf_custom_attributes`) provides an extremely simple interface to access an
-internal `KeyValues` storage on each weapon, being able to assign custom key/value data (mainly
-for attributes).
+The core plugin (`tf_custom_attributes`) provides an extremely simple interface for other
+plugins to access some internal storage on each weapon, being able to assign custom key/value
+data (mainly for plugin-based attributes).
 
-This is not a drop-in replacement for the [Custom Weapons] project.  Howevern, the tooling is
-there for plugin authors to spawn and attach their own `KeyValues` structure on weapons &mdash;
-someone just needs to build it.
+This is not a drop-in replacement for the [Custom Weapons] project.  However, the tooling is
+there for plugin authors to spawn and attach their own custom attributes structure on weapons
+&mdash; someone just needs to build it.
 
 [Custom Weapons]: https://forums.alliedmods.net/showthread.php?t=285258
 
 ## How it works
 
-This plugin leverages the existing attributes system (using TF2Attributes), packing a KeyValues
-handle into a benign, unused attribute.  This allows attributes to persist through weapon drops.
+The current implementation leverages the existing attributes system (using TF2Attributes),
+packing a KeyValues handle into a benign, unused attribute.  This allows attributes to persist
+through weapon drops.
+
+The particular implementation details may change in the future, as long as we can get
+information out of an entity in a persistent manner.
 
 ## Writing attribute plugins
 
