@@ -17,6 +17,22 @@ there for plugin authors to spawn and attach their own custom attributes structu
 
 [Custom Weapons]: https://forums.alliedmods.net/showthread.php?t=285258
 
+## Why another API for custom weapon attributes?
+
+To put it bluntly, I don't like the existing approach as an attribute developer.
+
+In every iteration of Custom Weapons that I'm aware of, you get one forward that tells you when
+a weapon requests an attribute:  `CustomWeaponsTF_OnAddAttribute` (or `CW3_OnAddAttribute`).
+
+This is an event-based approach to adding attributes, which means the burden is put on
+developers to listen to that forward and write boilerplate to keep track of what entities have
+their attributes and what values they have.
+
+I've done a fair bit of work in the guts of the server code, and I've written my API in such a
+way that handles it similar to how the game does it:  you instead check for your desired
+attributes at runtime, when the game is doing something you might be interested in, and the
+attribute system handles storing the values for you.
+
 ## How it works
 
 The current implementation leverages the existing attributes system (using TF2Attributes),
@@ -28,15 +44,13 @@ information out of an entity in a persistent manner.
 
 ## Writing attribute plugins
 
-Custom attributes are standard SourceMod plugins, so standard stuff applies.  However, there are
-a few things I'd recommend and keep in mind:
+Custom attributes are standard SourceMod plugins, so standard stuff applies.  However, there is
+one principle to keep in mind:
 
-* Attributes are generally immutable.  The only time plugins should add attributes is during the
-`TF2CustAttr_OnKeyValuesAdded` forward (or if a plugin does a full replacement in
-`TF2CustAttr_UseKeyValues`).
-* Hooks should effectively be detours, if they aren't already (that is, if you need to hook some
-specific client / weapon function, make sure it's applied to all supported entities).  If you
-need to check the value of an attribute, do it at runtime, when the hook is called.  Weapons
-*can* be picked up by other players or equipped dynamically; doing conditional hooks complicates
-things, making it difficult to keep track of whether it's just not hooked or if there's another
-issue somewhere along the chain.
+Attributes are generally unknown until they matter.  This means that:
+
+* Attribute plugins shouldn't care about the attribute / entity mapping and lifecycle.
+That is the job of this framework.
+* Hooks should effectively be detours.  All entities that support the attribute should be
+checked if the attribute is present at runtime.
+* Attributes are potentially mutable.  Another plugin may remove or modify their value.
