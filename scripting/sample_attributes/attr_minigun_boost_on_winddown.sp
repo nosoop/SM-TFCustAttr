@@ -16,7 +16,7 @@ Handle g_DHookMinigunWindDown;
 public void OnPluginStart() {
 	Handle hGameConf = LoadGameConfigFile("tf2.custattr.sample");
 	if (!hGameConf) {
-		SetFailState("Missing weapon overhaul gamedata tf2.custattr.sample.txt).");
+		SetFailState("Failed to load gamedata (tf2.custattr.sample).");
 	}
 	
 	g_DHookMinigunWindDown = DHookCreateDetour(Address_Null, CallConv_THISCALL, ReturnType_Void,
