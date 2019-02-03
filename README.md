@@ -11,9 +11,13 @@ The core plugin (`tf_custom_attributes`) provides an extremely simple interface 
 plugins to access some internal storage on each weapon, being able to assign custom key/value
 data (mainly for plugin-based attributes).
 
-This is not a drop-in replacement for the [Custom Weapons] project.  However, the tooling is
-there for plugin authors to spawn and attach their own custom attributes structure on weapons
-&mdash; someone just needs to build it.
+For server operators that want to use attributes written for this framework, there are a few
+options:
+
+* Server operators that want attributes applied by item definnition index can use the bundled
+Custom Attribute Basic Manager.
+* Server operators currently using any version of [Custom Weapons] can use the bundled
+Custom Weapons Adapter.
 
 [Custom Weapons]: https://forums.alliedmods.net/showthread.php?t=285258
 
