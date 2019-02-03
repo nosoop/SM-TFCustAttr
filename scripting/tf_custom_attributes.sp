@@ -12,13 +12,13 @@
 
 #pragma newdecls required
 
-#define PLUGIN_VERSION "0.0.0"
+#define PLUGIN_VERSION "0.1.0"
 public Plugin myinfo = {
 	name = "[TF2] Custom Attributes",
 	author = "nosoop",
 	description = "Minimalistic attribute handling.",
 	version = PLUGIN_VERSION,
-	url = "localhost"
+	url = "https://github.com/nosoop/SM-TFCustAttr"
 }
 
 #define CUSTOMATTRIBUTE_STORAGE "referenced item id low"
@@ -164,7 +164,7 @@ public int Native_GetAttributeKV(Handle caller, int argc) {
 	
 	KeyValues result = GetCustomAttributeStruct(entity);
 	if (result && IsValidHandle(result)) {
-		return view_as<int>(CloneHandle(result, caller));
+		return MoveHandleImmediate(KeyValuesCopyView(result, "CustomAttributes"), caller);
 	}
 	return 0;
 }
@@ -173,8 +173,7 @@ public int Native_UseCustomKV(Handle caller, int argc) {
 	int entity = GetNativeCell(1);
 	KeyValues kv = GetNativeCell(2);
 	
-	KeyValues customAttributes = new KeyValues("CustomAttributes");
-	customAttributes.Import(kv);
+	KeyValues customAttributes = KeyValuesCopyView(kv, "CustomAttributes");
 	
 	TF2Attrib_SetByName(entity, CUSTOMATTRIBUTE_STORAGE,
 			view_as<float>(customAttributes));
@@ -182,6 +181,31 @@ public int Native_UseCustomKV(Handle caller, int argc) {
 	g_AttributeKVRefs.Push(customAttributes);
 	
 	return 1;
+}
+
+/**
+ * Returns a clone of a handle with a new owner, deleting the existing one in the process.
+ * 
+ * This function is used for cases where the `hndl` argument is the return value of another
+ * function call, in which case attempting to use `MoveHandle` results in an argument type
+ * mismatch compile error.
+ * 
+ * The return type is `any` to allow assignment without retagging.
+ */
+stock any MoveHandleImmediate(Handle hndl, Handle plugin = INVALID_HANDLE) {
+	Handle moved = CloneHandle(hndl, plugin);
+	CloseHandle(hndl);
+	return moved;
+}
+
+/**
+ * Returns a new KeyValues handle containing the contents of the given KeyValues handle at its
+ * current position.
+ */
+KeyValues KeyValuesCopyView(KeyValues kv, const char[] section = "") {
+	KeyValues copy = new KeyValues(section);
+	copy.Import(kv);
+	return copy;
 }
 
 /**
