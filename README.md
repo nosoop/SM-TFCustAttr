@@ -14,7 +14,7 @@ data (mainly for plugin-based attributes).
 For server operators that want to use attributes written for this framework, there are a few
 options:
 
-* Server operators that want attributes applied by item definnition index can use the bundled
+* Server operators that want attributes applied by item definition index can use the bundled
 Custom Attribute Basic Manager.
 * Server operators currently using any version of [Custom Weapons] can use the bundled
 Custom Weapons Adapter.
