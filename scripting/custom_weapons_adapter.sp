@@ -14,7 +14,7 @@
 #pragma newdecls required
 #include <tf_custom_attributes>
 
-#define PLUGIN_VERSION "1.0.0"
+#define PLUGIN_VERSION "1.1.0"
 public Plugin myinfo = {
 	name = "[TF2CA] Custom Weaponns Config Adapter for Custom Attributes",
 	author = "nosoop",
@@ -37,7 +37,7 @@ public Plugin myinfo = {
  */
 public Action CustomWeaponsTF_OnAddAttribute(int weapon, int client, const char[] attrib,
 		const char[] plugin, const char[] value) {
-	if (!StrEqual(plugin, CUSTOM_ATTR_ADAPTER_PLUGIN_NAME, false)) {
+	if (!IsRegisteredForAdapterPlugin(plugin)) {
 		return Plugin_Continue;
 	}
 	
@@ -54,7 +54,7 @@ public Action CustomWeaponsTF_OnAddAttribute(int weapon, int client, const char[
  */
 public Action CW3_OnAddAttribute(int slot, int client, const char[] attrib, const char[] plugin,
 		const char[] value, bool whileActive) {
-	if (!StrEqual(plugin, CUSTOM_ATTR_ADAPTER_PLUGIN_NAME, false)) {
+	if (!IsRegisteredForAdapterPlugin(plugin)) {
 		return Plugin_Continue;
 	}
 	
@@ -62,6 +62,17 @@ public Action CW3_OnAddAttribute(int slot, int client, const char[] attrib, cons
 	SetRuntimeCustomAttribute(weapon, attrib, value);
 	
 	return Plugin_Handled;
+}
+
+/**
+ * Returns true if the plugin name for CW2/3 starts with `CUSTOM_ATTR_ADAPTER_PLUGIN_NAME`.
+ * 
+ * Arbitrary suffixes are allowed for weapon developers to annotate which plugin actually
+ * implements the attribute, but it's never checked in any way.
+ */
+static bool IsRegisteredForAdapterPlugin(const char[] plugin) {
+	return strncmp(plugin, CUSTOM_ATTR_ADAPTER_PLUGIN_NAME,
+			strlen(CUSTOM_ATTR_ADAPTER_PLUGIN_NAME), false) == 0;
 }
 
 /**
