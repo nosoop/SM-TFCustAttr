@@ -1,5 +1,5 @@
 /**
- * [TF2CA] Custom Weaponns Config Adapter for Custom Attributes
+ * [TF2CA] Custom Weapons Config Adapter for Custom Attributes
  * 
  * Unwieldly name for it, I know.
  * 
@@ -14,9 +14,9 @@
 #pragma newdecls required
 #include <tf_custom_attributes>
 
-#define PLUGIN_VERSION "1.1.0"
+#define PLUGIN_VERSION "1.2.0"
 public Plugin myinfo = {
-	name = "[TF2CA] Custom Weaponns Config Adapter for Custom Attributes",
+	name = "[TF2CA] Custom Weapons Config Adapter for Custom Attributes",
 	author = "nosoop",
 	description = "Adapter to apply Custom Attributes framework attributes through "
 			... "Custom Weapons configuration files.",
@@ -29,6 +29,7 @@ public Plugin myinfo = {
  * Custom Attributes.
  */
 #define CUSTOM_ATTR_ADAPTER_PLUGIN_NAME "custom-attribute-adapter"
+#define CUSTOM_ATTR_ADAPTER_PLUGIN_REQUIRED_NAME CUSTOM_ATTR_ADAPTER_PLUGIN_NAME ... "/"
 
 /**
  * Compatibility shim for Custom Weapons 2. (customweaponstf.inc)
@@ -65,14 +66,38 @@ public Action CW3_OnAddAttribute(int slot, int client, const char[] attrib, cons
 }
 
 /**
- * Returns true if the plugin name for CW2/3 starts with `CUSTOM_ATTR_ADAPTER_PLUGIN_NAME`.
+ * Returns true if the plugin name for CW2/3 starts with the constant
+ * `CUSTOM_ATTR_ADAPTER_PLUGIN_NAME`.
  * 
- * Arbitrary suffixes are allowed for weapon developers to annotate which plugin actually
- * implements the attribute, but it's never checked in any way.
+ * If the plugin name is in the format matching the prefix
+ * `CUSTOM_ATTR_ADAPTER_PLUGIN_REQUIRED_NAME`, the string after the prefix is treated as a
+ * base filename and checked to see if a plugin with the name is loaded in.  This provides
+ * slightly improved troubleshooting capabilities, as Custom Attributes has no way to indicate
+ * that an attribute isn't valid.
+ * 
+ * Provided the latter prefix isn't matched, arbitrary suffixes are allowed for weapon
+ * developers to annotate which plugin actually implements the attribute.
  */
 static bool IsRegisteredForAdapterPlugin(const char[] plugin) {
-	return strncmp(plugin, CUSTOM_ATTR_ADAPTER_PLUGIN_NAME,
-			strlen(CUSTOM_ATTR_ADAPTER_PLUGIN_NAME), false) == 0;
+	if (strncmp(plugin, CUSTOM_ATTR_ADAPTER_PLUGIN_NAME,
+			strlen(CUSTOM_ATTR_ADAPTER_PLUGIN_NAME), false)) {
+		// fails basic prefix check, attribute event is not for the adapter
+		return false;
+	}
+	
+	if (strncmp(plugin, CUSTOM_ATTR_ADAPTER_PLUGIN_REQUIRED_NAME,
+			strlen(CUSTOM_ATTR_ADAPTER_PLUGIN_REQUIRED_NAME), false)) {
+		// base prefix matches, but it does not match the prefix for the loaded plugin check
+		return true;
+	}
+	
+	bool bPluginAvailable =
+			PluginExistsByBaseName(plugin[strlen(CUSTOM_ATTR_ADAPTER_PLUGIN_REQUIRED_NAME)]);
+	if (!bPluginAvailable) {
+		LogError("Could not find required attribute plugin %s",
+				plugin[strlen(CUSTOM_ATTR_ADAPTER_PLUGIN_REQUIRED_NAME)]);
+	}
+	return bPluginAvailable;
 }
 
 /**
@@ -88,4 +113,35 @@ static void SetRuntimeCustomAttribute(int entity, const char[] attrib, const cha
 	attributes.SetString(attrib, value);
 	TF2CustAttr_UseKeyValues(entity, attributes);
 	delete attributes;
+}
+
+/**
+ * Returns true if the plugin with the specified base name is loaded in.
+ */
+stock bool PluginExistsByBaseName(const char[] filename) {
+	bool bFound = false;
+	Handle iter = GetPluginIterator();
+	while (MorePlugins(iter) && !bFound) {
+		char buffer[PLATFORM_MAX_PATH];
+		GetPluginFilename(ReadPlugin(iter), buffer, sizeof(buffer));
+		
+		// strip plugin extension
+		int iExtension = StrContains(buffer, ".smx");
+		if (iExtension != -1) {
+			buffer[iExtension] = '\0';
+		}
+		
+		bFound = strcmp(buffer, filename, false) == 0;
+		if (bFound) {
+			continue;
+		}
+		
+		// start from last forward slash in the loaded plugin filename
+		int iBaseName = FindCharInString(buffer, '/', true);
+		if (iBaseName != -1) {
+			bFound = StrEqual(buffer[iBaseName + 1], filename);
+		}
+	}
+	delete iter;
+	return bFound;
 }
