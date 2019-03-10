@@ -12,7 +12,7 @@
 
 #pragma newdecls required
 
-#define PLUGIN_VERSION "0.1.0"
+#define PLUGIN_VERSION "0.2.0"
 public Plugin myinfo = {
 	name = "[TF2] Custom Attributes",
 	author = "nosoop",
@@ -32,6 +32,10 @@ public APLRes AskPluginLoad2(Handle self, bool late, char[] error, int maxlen) {
 	
 	CreateNative("TF2CustAttr_GetAttributeKeyValues", Native_GetAttributeKV);
 	CreateNative("TF2CustAttr_UseKeyValues", Native_UseCustomKV);
+	
+	CreateNative("TF2CustAttr_GetInt", Native_GetAttributeValueInt);
+	CreateNative("TF2CustAttr_GetFloat", Native_GetAttributeValueFloat);
+	CreateNative("TF2CustAttr_GetString", Native_GetAttributeValueString);
 	
 	return APLRes_Success;
 }
@@ -181,6 +185,54 @@ public int Native_UseCustomKV(Handle caller, int argc) {
 	g_AttributeKVRefs.Push(customAttributes);
 	
 	return 1;
+}
+
+public int Native_GetAttributeValueInt(Handle caller, int argc) {
+	int entity = GetNativeCell(1);
+	KeyValues kv = GetCustomAttributeStruct(entity);
+	if (!kv) {
+		return GetNativeCell(3);
+	}
+	
+	char attr[64];
+	GetNativeString(2, attr, sizeof(attr));
+	
+	return kv.GetNum(attr, GetNativeCell(3));
+}
+
+public int Native_GetAttributeValueFloat(Handle caller, int argc) {
+	int entity = GetNativeCell(1);
+	KeyValues kv = GetCustomAttributeStruct(entity);
+	if (!kv) {
+		// float
+		return GetNativeCell(3);
+	}
+	
+	char attr[64];
+	GetNativeString(2, attr, sizeof(attr));
+	
+	return view_as<int>(kv.GetFloat(attr, GetNativeCell(3)));
+}
+
+public int Native_GetAttributeValueString(Handle caller, int argc) {
+	int entity = GetNativeCell(1);
+	KeyValues kv = GetCustomAttributeStruct(entity);
+	
+	int maxlen = GetNativeCell(4);
+	char[] outputBuffer = new char[maxlen];
+	int nBytesWritten;
+	
+	GetNativeString(5, outputBuffer, maxlen, nBytesWritten);
+	
+	if (!kv) {
+		return nBytesWritten;
+	}
+	
+	char attr[64];
+	GetNativeString(2, attr, sizeof(attr));
+	
+	kv.GetString(attr, outputBuffer, maxlen, outputBuffer);
+	return strlen(outputBuffer);
 }
 
 /**
