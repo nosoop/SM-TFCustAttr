@@ -15,11 +15,7 @@
 
 public Action TF2_CalcIsAttackCritical(int client, int weapon, char[] weaponName,
 		bool &result) {
-	KeyValues attributes = TF2CustAttr_GetAttributeKeyValues(weapon);
-	if (attributes) {
-		if (attributes.GetNum("quack on crit check")) {
-			EmitGameSoundToClient(client, "Halloween.Quack");
-		}
-		delete attributes;
+	if (TF2CustAttr_GetInt(weapon, "quack on crit check")) {
+		EmitGameSoundToClient(client, "Halloween.Quack");
 	}
 }

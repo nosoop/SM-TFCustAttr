@@ -34,15 +34,9 @@ public MRESReturn OnMinigunWindDownPost(int minigun) {
 		return MRES_Ignored;
 	}
 	
-	KeyValues kv = TF2CustAttr_GetAttributeKeyValues(minigun);
-	if (!kv) {
-		return MRES_Ignored;
-	}
-	
-	float flBoostDuration = kv.GetFloat("minigun winddown boost duration");
+	float flBoostDuration = TF2CustAttr_GetFloat(minigun, "minigun winddown boost duration");
 	if (flBoostDuration) {
 		TF2_AddCondition(owner, TFCond_SpeedBuffAlly, flBoostDuration, owner);
 	}
-	delete kv;
 	return MRES_Ignored;
 }
