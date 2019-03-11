@@ -12,7 +12,7 @@
 
 #pragma newdecls required
 
-#define PLUGIN_VERSION "0.2.0"
+#define PLUGIN_VERSION "0.2.1"
 public Plugin myinfo = {
 	name = "[TF2] Custom Attributes",
 	author = "nosoop",
@@ -216,23 +216,21 @@ public int Native_GetAttributeValueFloat(Handle caller, int argc) {
 
 public int Native_GetAttributeValueString(Handle caller, int argc) {
 	int entity = GetNativeCell(1);
-	KeyValues kv = GetCustomAttributeStruct(entity);
 	
 	int maxlen = GetNativeCell(4);
 	char[] outputBuffer = new char[maxlen];
-	int nBytesWritten;
 	
+	int nBytesWritten;
 	GetNativeString(5, outputBuffer, maxlen, nBytesWritten);
 	
-	if (!kv) {
-		return nBytesWritten;
+	KeyValues kv = GetCustomAttributeStruct(entity);
+	if (kv) {
+		char attr[64];
+		GetNativeString(2, attr, sizeof(attr));
+		kv.GetString(attr, outputBuffer, maxlen, outputBuffer);
 	}
-	
-	char attr[64];
-	GetNativeString(2, attr, sizeof(attr));
-	
-	kv.GetString(attr, outputBuffer, maxlen, outputBuffer);
-	return strlen(outputBuffer);
+	SetNativeString(3, outputBuffer, maxlen, true, nBytesWritten);
+	return nBytesWritten;
 }
 
 /**
