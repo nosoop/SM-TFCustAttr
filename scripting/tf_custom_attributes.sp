@@ -12,7 +12,7 @@
 
 #pragma newdecls required
 
-#define PLUGIN_VERSION "0.2.1"
+#define PLUGIN_VERSION "0.2.2"
 public Plugin myinfo = {
 	name = "[TF2] Custom Attributes",
 	author = "nosoop",
@@ -131,7 +131,7 @@ public Action GarbageCollectAttribute(Handle timer) {
 			continue;
 		}
 		
-		KeyValues kv = GetCustomAttributeStruct(entity);
+		KeyValues kv = GetCustomAttributeStruct(entity, .validate = false);
 		if (kv) {
 			savedAttributes.Push(kv);
 			
@@ -155,10 +155,13 @@ public Action GarbageCollectAttribute(Handle timer) {
 /** 
  * Returns the KeyValues handle associated with an entity, if one exists.
  */
-KeyValues GetCustomAttributeStruct(int entity) {
+KeyValues GetCustomAttributeStruct(int entity, bool validate) {
 	Address pCustomAttr = TF2Attrib_GetByName(entity, CUSTOMATTRIBUTE_STORAGE);
 	if (pCustomAttr != Address_Null) {
-		return view_as<KeyValues>(TF2Attrib_GetValue(pCustomAttr));
+		KeyValues kv = view_as<KeyValues>(TF2Attrib_GetValue(pCustomAttr));
+		if (!validate || IsValidHandle(kv)) {
+			return kv;
+		}
 	}
 	return null;
 }
@@ -166,8 +169,8 @@ KeyValues GetCustomAttributeStruct(int entity) {
 public int Native_GetAttributeKV(Handle caller, int argc) {
 	int entity = GetNativeCell(1);
 	
-	KeyValues result = GetCustomAttributeStruct(entity);
-	if (result && IsValidHandle(result)) {
+	KeyValues result = GetCustomAttributeStruct(entity, .validate = true);
+	if (result) {
 		return MoveHandleImmediate(KeyValuesCopyView(result, "CustomAttributes"), caller);
 	}
 	return 0;
@@ -189,7 +192,7 @@ public int Native_UseCustomKV(Handle caller, int argc) {
 
 public int Native_GetAttributeValueInt(Handle caller, int argc) {
 	int entity = GetNativeCell(1);
-	KeyValues kv = GetCustomAttributeStruct(entity);
+	KeyValues kv = GetCustomAttributeStruct(entity, .validate = true);
 	if (!kv) {
 		return GetNativeCell(3);
 	}
@@ -202,7 +205,7 @@ public int Native_GetAttributeValueInt(Handle caller, int argc) {
 
 public int Native_GetAttributeValueFloat(Handle caller, int argc) {
 	int entity = GetNativeCell(1);
-	KeyValues kv = GetCustomAttributeStruct(entity);
+	KeyValues kv = GetCustomAttributeStruct(entity, .validate = true);
 	if (!kv) {
 		// float
 		return GetNativeCell(3);
@@ -223,7 +226,7 @@ public int Native_GetAttributeValueString(Handle caller, int argc) {
 	int nBytesWritten;
 	GetNativeString(5, outputBuffer, maxlen, nBytesWritten);
 	
-	KeyValues kv = GetCustomAttributeStruct(entity);
+	KeyValues kv = GetCustomAttributeStruct(entity, .validate = true);
 	if (kv) {
 		char attr[64];
 		GetNativeString(2, attr, sizeof(attr));
