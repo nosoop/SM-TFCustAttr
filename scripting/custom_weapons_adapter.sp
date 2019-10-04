@@ -14,7 +14,7 @@
 #pragma newdecls required
 #include <tf_custom_attributes>
 
-#define PLUGIN_VERSION "1.2.0"
+#define PLUGIN_VERSION "1.2.1"
 public Plugin myinfo = {
 	name = "[TF2CA] Custom Weapons Config Adapter for Custom Attributes",
 	author = "nosoop",
@@ -60,6 +60,14 @@ public Action CW3_OnAddAttribute(int slot, int client, const char[] attrib, cons
 	}
 	
 	int weapon = GetPlayerWeaponSlot(client, slot);
+	if (!IsValidEntity(weapon)) {
+		LogError("Could not find a weapon in slot %d to apply '%s'.  The game might not "
+				... "actually consider it a proper weapon (maybe it's a watch or shield?).  "
+				... "Move this attribute to the 'attributes' section to use the CW2 forward and "
+				... "retry.", slot, attrib);
+		return Plugin_Continue;
+	}
+	
 	SetRuntimeCustomAttribute(weapon, attrib, value);
 	
 	return Plugin_Handled;
