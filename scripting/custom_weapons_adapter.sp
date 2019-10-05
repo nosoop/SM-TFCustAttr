@@ -14,7 +14,7 @@
 #pragma newdecls required
 #include <tf_custom_attributes>
 
-#define PLUGIN_VERSION "1.2.1"
+#define PLUGIN_VERSION "1.2.2"
 public Plugin myinfo = {
 	name = "[TF2CA] Custom Weapons Config Adapter for Custom Attributes",
 	author = "nosoop",
@@ -132,6 +132,9 @@ stock bool PluginExistsByBaseName(const char[] filename) {
 	while (MorePlugins(iter) && !bFound) {
 		char buffer[PLATFORM_MAX_PATH];
 		GetPluginFilename(ReadPlugin(iter), buffer, sizeof(buffer));
+		
+		// normalize windows paths
+		ReplaceString(buffer, sizeof(buffer), "\\", "/");
 		
 		// strip plugin extension
 		int iExtension = StrContains(buffer, ".smx");
