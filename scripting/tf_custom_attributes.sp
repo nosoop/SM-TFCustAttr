@@ -27,6 +27,9 @@ Handle g_OnAttributeKVAdded;
 
 ArrayList g_AttributeKVRefs;
 
+ConVar g_ConVarProfiler;
+StringMap g_AttributeAccessInfo;
+
 public APLRes AskPluginLoad2(Handle self, bool late, char[] error, int maxlen) {
 	RegPluginLibrary("tf2custattr");
 	
@@ -49,6 +52,13 @@ public void OnPluginStart() {
 			ET_Event, Param_Cell, Param_Cell);
 	
 	g_AttributeKVRefs = new ArrayList();
+	
+	g_ConVarProfiler = CreateConVar("custattr_prof_enable", "0",
+			"Performs profiling for attribute accesses.");
+	RegAdminCmd("custattr_prof_show", ShowProfilerData, ADMFLAG_ROOT,
+			"Dumps profiling information.");
+	
+	g_AttributeAccessInfo = new StringMap();
 }
 
 /**
@@ -66,6 +76,35 @@ public void OnPluginEnd() {
 			TF2Attrib_RemoveByDefIndex(entity, ATTRID_CUSTOM_STORAGE);
 		}
 	}
+}
+
+public Action ShowProfilerData(int client, int argc) {
+	if (!g_ConVarProfiler.BoolValue) {
+		ReplyToCommand(client, "Profiler is currently disabled");
+	}
+	char filePath[PLATFORM_MAX_PATH];
+	BuildPath(Path_SM, filePath, sizeof(filePath), "logs/custattr_prof_%d.txt", GetTime());
+	
+	File f = OpenFile(filePath, "w");
+	
+	StringMapSnapshot sh = g_AttributeAccessInfo.Snapshot();
+	f.WriteLine("Showing information for %d attributes", sh.Length);
+	for (int i; i < sh.Length; i++) {
+		char attrName[64];
+		sh.GetKey(i, attrName, sizeof(attrName));
+		
+		int numCalls;
+		if (g_AttributeAccessInfo.GetValue(attrName, numCalls)) {
+			f.WriteLine("%64s / %d calls", attrName, numCalls);
+		}
+	}
+	
+	delete sh;
+	delete f;
+	
+	ReplyToCommand(client, "Wrote profiler information to %s", filePath);
+	
+	return Plugin_Handled;
 }
 
 /**
@@ -187,6 +226,8 @@ public int Native_UseCustomKV(Handle caller, int argc) {
 }
 
 public int Native_GetAttributeValueInt(Handle caller, int argc) {
+	RecordNativeAttributeAccess();
+	
 	int entity = GetNativeCell(1);
 	KeyValues kv = GetCustomAttributeStruct(entity, .validate = true);
 	if (!kv) {
@@ -195,11 +236,12 @@ public int Native_GetAttributeValueInt(Handle caller, int argc) {
 	
 	char attr[64];
 	GetNativeString(2, attr, sizeof(attr));
-	
 	return kv.GetNum(attr, GetNativeCell(3));
 }
 
 public int Native_GetAttributeValueFloat(Handle caller, int argc) {
+	RecordNativeAttributeAccess();
+	
 	int entity = GetNativeCell(1);
 	KeyValues kv = GetCustomAttributeStruct(entity, .validate = true);
 	if (!kv) {
@@ -209,11 +251,12 @@ public int Native_GetAttributeValueFloat(Handle caller, int argc) {
 	
 	char attr[64];
 	GetNativeString(2, attr, sizeof(attr));
-	
 	return view_as<int>(kv.GetFloat(attr, GetNativeCell(3)));
 }
 
 public int Native_GetAttributeValueString(Handle caller, int argc) {
+	RecordNativeAttributeAccess();
+	
 	int entity = GetNativeCell(1);
 	
 	int maxlen = GetNativeCell(4);
@@ -340,4 +383,17 @@ void EraseAttributeStructure() {
 		}
 	}
 	g_AttributeKVRefs.Clear();
+}
+
+void RecordNativeAttributeAccess() {
+	if (!g_ConVarProfiler.BoolValue) {
+		return;
+	}
+
+	char attr[64];
+	GetNativeString(2, attr, sizeof(attr));
+
+	int numCalls;
+	g_AttributeAccessInfo.GetValue(attr, numCalls);
+	g_AttributeAccessInfo.SetValue(attr, numCalls + 1);
 }
