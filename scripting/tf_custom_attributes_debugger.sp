@@ -6,8 +6,10 @@
 #include <tf2_stocks>
 #include <tf_custom_attributes>
 
+#undef REQUIRE_PLUGIN
 #tryinclude <tf2wearables>
 #tryinclude <tf_econ_data>
+#define REQUIRE_PLUGIN
 
 #define PLUGIN_VERSION "1.0.0"
 public Plugin myinfo = {
