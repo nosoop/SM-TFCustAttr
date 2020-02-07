@@ -53,6 +53,24 @@ native float TF2CustAttr_GetFloat(int entity, const char[] attr, float flDefault
 native int TF2CustAttr_GetString(int entity, const char[] attr, char[] buffer, int maxlen,
 		const char[] defaultValue = "");
 
+/**
+ * Sets an entity's custom attribute's integer value at runtime.
+ * Throws an error if the entity does not support attributes.
+ */
+native void TF2CustAttr_SetInt(int entity, const char[] attr, int iValue);
+
+/**
+ * Sets an entity's custom attribute's float value at runtime.
+ * Throws an error if the entity does not support attributes.
+ */
+native void TF2CustAttr_SetFloat(int entity, const char[] attr, float flValue);
+
+/**
+ * Sets an entity's custom attribute's string value at runtime.
+ * Throws an error if the entity does not support attributes.
+ */
+native void TF2CustAttr_SetString(int entity, const char[] attr, const char[] value);
+
 public SharedPlugin __pl_tf_custom_attributes = {
 	name = "tf2custattr",
 	file = "tf_custom_attributes.smx",

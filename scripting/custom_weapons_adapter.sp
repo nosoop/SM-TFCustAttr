@@ -42,8 +42,7 @@ public Action CustomWeaponsTF_OnAddAttribute(int weapon, int client, const char[
 		return Plugin_Continue;
 	}
 	
-	SetRuntimeCustomAttribute(weapon, attrib, value);
-	
+	TF2CustAttr_SetString(weapon, attrib, value);
 	return Plugin_Handled;
 }
 
@@ -68,8 +67,7 @@ public Action CW3_OnAddAttribute(int slot, int client, const char[] attrib, cons
 		return Plugin_Continue;
 	}
 	
-	SetRuntimeCustomAttribute(weapon, attrib, value);
-	
+	TF2CustAttr_SetString(weapon, attrib, value);
 	return Plugin_Handled;
 }
 
@@ -106,21 +104,6 @@ static bool IsRegisteredForAdapterPlugin(const char[] plugin) {
 				plugin[strlen(CUSTOM_ATTR_ADAPTER_PLUGIN_REQUIRED_NAME)]);
 	}
 	return bPluginAvailable;
-}
-
-/**
- * Applies a custom attribute to the specified entity, creating a new handle if it doesn't
- * exist.
- */
-static void SetRuntimeCustomAttribute(int entity, const char[] attrib, const char[] value) {
-	KeyValues attributes = TF2CustAttr_GetAttributeKeyValues(entity);
-	if (!attributes) {
-		attributes = new KeyValues("CustomAttributes");
-	}
-	
-	attributes.SetString(attrib, value);
-	TF2CustAttr_UseKeyValues(entity, attributes);
-	delete attributes;
 }
 
 /**

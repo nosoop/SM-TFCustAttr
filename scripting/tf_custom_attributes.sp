@@ -12,7 +12,7 @@
 
 #pragma newdecls required
 
-#define PLUGIN_VERSION "0.2.2"
+#define PLUGIN_VERSION "0.3.0"
 public Plugin myinfo = {
 	name = "[TF2] Custom Attributes",
 	author = "nosoop",
@@ -36,6 +36,10 @@ public APLRes AskPluginLoad2(Handle self, bool late, char[] error, int maxlen) {
 	CreateNative("TF2CustAttr_GetInt", Native_GetAttributeValueInt);
 	CreateNative("TF2CustAttr_GetFloat", Native_GetAttributeValueFloat);
 	CreateNative("TF2CustAttr_GetString", Native_GetAttributeValueString);
+	
+	CreateNative("TF2CustAttr_SetInt", Native_SetAttributeValueInt);
+	CreateNative("TF2CustAttr_SetFloat", Native_SetAttributeValueFloat);
+	CreateNative("TF2CustAttr_SetString", Native_SetAttributeValueString);
 	
 	return APLRes_Success;
 }
@@ -236,6 +240,52 @@ public int Native_GetAttributeValueString(Handle caller, int argc) {
 	return nBytesWritten;
 }
 
+public int Native_SetAttributeValueInt(Handle caller, int argc) {
+	int entity = GetNativeCell(1);
+	KeyValues kv = InitAttributeRuntimeStruct(entity);
+	if (!kv) {
+		ThrowNativeError(1, "Entity %d does not support attributes", entity);
+	}
+	
+	char attr[64];
+	GetNativeString(2, attr, sizeof(attr));
+	
+	int value = GetNativeCell(3);
+	kv.SetNum(attr, value);
+}
+
+public int Native_SetAttributeValueFloat(Handle caller, int argc) {
+	int entity = GetNativeCell(1);
+	KeyValues kv = InitAttributeRuntimeStruct(entity);
+	if (!kv) {
+		ThrowNativeError(1, "Entity %d does not support attributes", entity);
+	}
+	
+	char attr[64];
+	GetNativeString(2, attr, sizeof(attr));
+	
+	float value = GetNativeCell(3);
+	kv.SetFloat(attr, value);
+}
+
+public int Native_SetAttributeValueString(Handle caller, int argc) {
+	int entity = GetNativeCell(1);
+	KeyValues kv = InitAttributeRuntimeStruct(entity);
+	if (!kv) {
+		ThrowNativeError(1, "Entity %d does not support attributes", entity);
+	}
+	
+	char attr[64];
+	GetNativeString(2, attr, sizeof(attr));
+	
+	int len;
+	GetNativeStringLength(3, len);
+	char[] buf = new char[++len];
+	GetNativeString(3, buf, len);
+	
+	kv.SetString(attr, buf);
+}
+
 /**
  * Returns a clone of a handle with a new owner, deleting the existing one in the process.
  * 
@@ -259,6 +309,23 @@ KeyValues KeyValuesCopyView(KeyValues kv, const char[] section = "") {
 	KeyValues copy = new KeyValues(section);
 	copy.Import(kv);
 	return copy;
+}
+
+KeyValues InitAttributeRuntimeStruct(int entity) {
+	if (!HasEntProp(entity, Prop_Send, "m_AttributeList")) {
+		return null;
+	}
+	
+	KeyValues kv = GetCustomAttributeStruct(entity, .validate = true);
+	if (!kv) {
+		kv = new KeyValues("CustomAttributes");
+		
+		TF2Attrib_SetByName(entity, CUSTOMATTRIBUTE_STORAGE,
+				view_as<float>(kv));
+		
+		g_AttributeKVRefs.Push(kv);
+	}
+	return kv;
 }
 
 /**
