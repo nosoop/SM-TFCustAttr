@@ -12,7 +12,7 @@
 
 #pragma newdecls required
 
-#define PLUGIN_VERSION "0.3.0"
+#define PLUGIN_VERSION "0.3.1"
 public Plugin myinfo = {
 	name = "[TF2] Custom Attributes",
 	author = "nosoop",
@@ -104,11 +104,7 @@ public void OnItemAttributeSpawnPost(int entity) {
 		Call_Finish(result);
 		
 		if (result > Plugin_Continue) {
-			// convention expects that all immutable KVs have been added here.
-			TF2Attrib_SetByName(entity, CUSTOMATTRIBUTE_STORAGE,
-					view_as<float>(customAttributes));
-			
-			g_AttributeKVRefs.Push(customAttributes);
+			SetCustomAttributeStruct(entity, customAttributes);
 		} else {
 			delete customAttributes;
 		}
@@ -185,11 +181,7 @@ public int Native_UseCustomKV(Handle caller, int argc) {
 	KeyValues kv = GetNativeCell(2);
 	
 	KeyValues customAttributes = KeyValuesCopyView(kv, "CustomAttributes");
-	
-	TF2Attrib_SetByName(entity, CUSTOMATTRIBUTE_STORAGE,
-			view_as<float>(customAttributes));
-	
-	g_AttributeKVRefs.Push(customAttributes);
+	SetCustomAttributeStruct(entity, customAttributes);
 	
 	return 1;
 }
@@ -311,6 +303,10 @@ KeyValues KeyValuesCopyView(KeyValues kv, const char[] section = "") {
 	return copy;
 }
 
+/**
+ * Returns the KeyValues handle assigned to the given entity, creating one if it doesn't exist.
+ * Returns `null` if the entity does not support attributes.
+ */
 KeyValues InitAttributeRuntimeStruct(int entity) {
 	if (!HasEntProp(entity, Prop_Send, "m_AttributeList")) {
 		return null;
@@ -319,13 +315,17 @@ KeyValues InitAttributeRuntimeStruct(int entity) {
 	KeyValues kv = GetCustomAttributeStruct(entity, .validate = true);
 	if (!kv) {
 		kv = new KeyValues("CustomAttributes");
-		
-		TF2Attrib_SetByName(entity, CUSTOMATTRIBUTE_STORAGE,
-				view_as<float>(kv));
-		
-		g_AttributeKVRefs.Push(kv);
+		SetCustomAttributeStruct(entity, kv);
 	}
 	return kv;
+}
+
+/**
+ * Stores the given KeyValues handle into the entity.
+ */
+void SetCustomAttributeStruct(int entity, KeyValues kv) {
+	TF2Attrib_SetByName(entity, CUSTOMATTRIBUTE_STORAGE, view_as<float>(kv));
+	g_AttributeKVRefs.Push(kv);
 }
 
 /**
