@@ -12,7 +12,7 @@
 
 #pragma newdecls required
 
-#define PLUGIN_VERSION "0.3.1"
+#define PLUGIN_VERSION "0.3.2"
 public Plugin myinfo = {
 	name = "[TF2] Custom Attributes",
 	author = "nosoop",
@@ -21,7 +21,7 @@ public Plugin myinfo = {
 	url = "https://github.com/nosoop/SM-TFCustAttr"
 }
 
-#define CUSTOMATTRIBUTE_STORAGE "referenced item id low"
+#define ATTRID_CUSTOM_STORAGE 192 // "referenced item id low"
 
 Handle g_OnAttributeKVAdded;
 
@@ -61,9 +61,9 @@ public void OnPluginEnd() {
 			continue;
 		}
 		
-		Address pAttrib = TF2Attrib_GetByName(entity, CUSTOMATTRIBUTE_STORAGE);
+		Address pAttrib = TF2Attrib_GetByDefIndex(entity, ATTRID_CUSTOM_STORAGE);
 		if (pAttrib) {
-			TF2Attrib_RemoveByName(entity, CUSTOMATTRIBUTE_STORAGE);
+			TF2Attrib_RemoveByDefIndex(entity, ATTRID_CUSTOM_STORAGE);
 		}
 	}
 }
@@ -91,7 +91,7 @@ public void OnEntityCreated(int entity, const char[] className) {
  * cleaned up.
  */
 public void OnItemAttributeSpawnPost(int entity) {
-	Address pCustomAttrib = TF2Attrib_GetByName(entity, CUSTOMATTRIBUTE_STORAGE);
+	Address pCustomAttrib = TF2Attrib_GetByDefIndex(entity, ATTRID_CUSTOM_STORAGE);
 	
 	if (!pCustomAttrib) {
 		KeyValues customAttributes = new KeyValues("CustomAttributes");
@@ -156,7 +156,7 @@ public Action GarbageCollectAttribute(Handle timer) {
  * Returns the KeyValues handle associated with an entity, if one exists.
  */
 KeyValues GetCustomAttributeStruct(int entity, bool validate) {
-	Address pCustomAttr = TF2Attrib_GetByName(entity, CUSTOMATTRIBUTE_STORAGE);
+	Address pCustomAttr = TF2Attrib_GetByDefIndex(entity, ATTRID_CUSTOM_STORAGE);
 	if (pCustomAttr != Address_Null) {
 		KeyValues kv = view_as<KeyValues>(TF2Attrib_GetValue(pCustomAttr));
 		if (!validate || IsValidHandle(kv)) {
@@ -324,7 +324,7 @@ KeyValues InitAttributeRuntimeStruct(int entity) {
  * Stores the given KeyValues handle into the entity.
  */
 void SetCustomAttributeStruct(int entity, KeyValues kv) {
-	TF2Attrib_SetByName(entity, CUSTOMATTRIBUTE_STORAGE, view_as<float>(kv));
+	TF2Attrib_SetByDefIndex(entity, ATTRID_CUSTOM_STORAGE, view_as<float>(kv));
 	g_AttributeKVRefs.Push(kv);
 }
 
