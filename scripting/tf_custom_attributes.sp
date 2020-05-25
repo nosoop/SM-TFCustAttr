@@ -27,6 +27,13 @@ Handle g_OnAttributeKVAdded;
 
 ArrayList g_AttributeKVRefs;
 
+enum struct AttributeCache {
+	int m_EntityRef;
+	Address m_pAttribute;
+}
+
+AttributeCache g_AttributeEntries[2048];
+
 public APLRes AskPluginLoad2(Handle self, bool late, char[] error, int maxlen) {
 	RegPluginLibrary("tf2custattr");
 	
@@ -158,14 +165,41 @@ public Action GarbageCollectAttribute(Handle timer) {
  * Returns the KeyValues handle associated with an entity, if one exists.
  */
 KeyValues GetCustomAttributeStruct(int entity, bool validate) {
-	Address pCustomAttr = TF2Attrib_GetByDefIndex(entity, ATTRID_CUSTOM_STORAGE);
+	int ref = EntIndexToEntRef(entity);
+	int ent = EntRefToEntIndex(ref);
+	
+	Address pCustomAttr = GetCustomAttributeAddressInternal(entity);
 	if (pCustomAttr != Address_Null) {
 		KeyValues kv = view_as<KeyValues>(TF2Attrib_GetValue(pCustomAttr));
 		if (!validate || IsValidHandle(kv)) {
+			g_AttributeEntries[ent].m_EntityRef = ref;
+			g_AttributeEntries[ent].m_pAttribute = pCustomAttr;
 			return kv;
 		}
 	}
 	return null;
+}
+
+/**
+ * Finds the attribute pointer associated with the custom attribute for an entity, doing a first
+ * lookup in the plugin cache.
+ */
+static Address GetCustomAttributeAddressInternal(int entity) {
+	int ref = EntIndexToEntRef(entity);
+	int ent = EntRefToEntIndex(ref);
+	
+	Address cached = g_AttributeEntries[ent].m_pAttribute;
+	if (g_AttributeEntries[ent].m_EntityRef == ref && cached
+			&& TF2Attrib_GetDefIndex(cached) == ATTRID_CUSTOM_STORAGE) {
+		return cached;
+	}
+	
+	Address pCustomAttr = TF2Attrib_GetByDefIndex(entity, ATTRID_CUSTOM_STORAGE);
+	if (pCustomAttr) {
+		g_AttributeEntries[ent].m_EntityRef = ref;
+		g_AttributeEntries[ent].m_pAttribute = pCustomAttr;
+	}
+	return pCustomAttr;
 }
 
 public int Native_GetAttributeKV(Handle caller, int argc) {
