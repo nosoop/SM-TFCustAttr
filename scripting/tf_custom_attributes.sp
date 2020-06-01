@@ -12,7 +12,7 @@
 
 #pragma newdecls required
 
-#define PLUGIN_VERSION "0.3.2"
+#define PLUGIN_VERSION "0.3.3-cache-attrptr"
 public Plugin myinfo = {
 	name = "[TF2] Custom Attributes",
 	author = "nosoop",
@@ -69,11 +69,7 @@ public void OnPluginEnd() {
 		if (!HasEntProp(entity, Prop_Send, "m_AttributeList")) {
 			continue;
 		}
-		
-		Address pAttrib = TF2Attrib_GetByDefIndex(entity, ATTRID_CUSTOM_STORAGE);
-		if (pAttrib) {
-			TF2Attrib_RemoveByDefIndex(entity, ATTRID_CUSTOM_STORAGE);
-		}
+		TF2Attrib_RemoveByDefIndex(entity, ATTRID_CUSTOM_STORAGE);
 	}
 }
 
@@ -170,7 +166,7 @@ KeyValues GetCustomAttributeStruct(int entity, bool validate) {
 	
 	Address pCustomAttr = GetCustomAttributeAddressInternal(entity);
 	if (pCustomAttr != Address_Null) {
-		KeyValues kv = view_as<KeyValues>(TF2Attrib_GetValue(pCustomAttr));
+		KeyValues kv = view_as<KeyValues>(GetItemAttributeValue(pCustomAttr));
 		if (!validate || IsValidHandle(kv)) {
 			g_AttributeEntries[ent].m_EntityRef = ref;
 			g_AttributeEntries[ent].m_pAttribute = pCustomAttr;
@@ -182,15 +178,17 @@ KeyValues GetCustomAttributeStruct(int entity, bool validate) {
 
 /**
  * Finds the attribute pointer associated with the custom attribute for an entity, doing a first
- * lookup in the plugin cache.
+ * lookup in the plugin cache to avoid calling game functions.
  */
 static Address GetCustomAttributeAddressInternal(int entity) {
 	int ref = EntIndexToEntRef(entity);
 	int ent = EntRefToEntIndex(ref);
 	
+	// the main concern here is that I don't trust the cached address to not be invalidated,
+	// and if it is, reading the location might segfault
 	Address cached = g_AttributeEntries[ent].m_pAttribute;
 	if (g_AttributeEntries[ent].m_EntityRef == ref && cached
-			&& TF2Attrib_GetDefIndex(cached) == ATTRID_CUSTOM_STORAGE) {
+			&& GetItemAttributeID(cached) == ATTRID_CUSTOM_STORAGE) {
 		return cached;
 	}
 	
@@ -376,4 +374,18 @@ void EraseAttributeStructure() {
 		}
 	}
 	g_AttributeKVRefs.Clear();
+}
+
+/**
+ * This is just TF2Attrib_GetDefIndex inlined to avoid native call overhead.
+ */
+static int GetItemAttributeID(Address pItemAttribute) {
+	return LoadFromAddress(pItemAttribute + view_as<Address>(0x04), NumberType_Int16);
+}
+
+/**
+ * This is just TF2Attrib_GetValue inlined to avoid native call overhead.
+ */
+static int GetItemAttributeValue(Address pItemAttribute) {
+	return LoadFromAddress(pItemAttribute + view_as<Address>(0x08), NumberType_Int32);
 }
