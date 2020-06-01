@@ -11,9 +11,7 @@
 
 #pragma newdecls required
 
-#include <stocksoup/log_server>
-
-#define PLUGIN_VERSION "0.0.0"
+#define PLUGIN_VERSION "1.0.0"
 public Plugin myinfo = {
 	name = "[TF2] Custom Attribute Manager",
 	author = "nosoop",
