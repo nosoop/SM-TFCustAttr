@@ -11,15 +11,22 @@ The core plugin (`tf_custom_attributes`) provides an extremely simple interface 
 plugins to access some internal storage on each weapon, being able to assign custom key/value
 data (mainly for plugin-based attributes).
 
-For server operators that want to use attributes written for this framework, there are a few
-options:
+## Installation
 
-* Server operators that want attributes applied by item definition index can use the bundled
-Custom Attribute Basic Manager.
-* Server operators currently using any version of [Custom Weapons] can use the bundled
-Custom Weapons Adapter.
+Install the core `tf_custom_attributes.smx` plugin file.  You'll also need [TF2Attributes][]
 
-[Custom Weapons]: https://forums.alliedmods.net/showthread.php?t=285258
+There are a number of plugins available that decide how to assign custom attributes to weapons
+and/or integrate with existing plugins; the [Applying Custom Attributes wiki page][apply]
+provides instructions on known compatible setups.
+
+If you're a developer, the [Creating Custom Attributes wiki page][create] provides some info on
+how to write your own attributes.  There are a few toy attribute examples in the project
+repository, and the [Public Custom Attribute Sets page][sets] has the source of more.
+
+[TF2Attributes]: https://github.com/nosoop/tf2attributes/releases
+[apply]: https://github.com/nosoop/SM-TFCustAttr/wiki/Applying-Custom-Attributes
+[create]: https://github.com/nosoop/SM-TFCustAttr/wiki/Creating-Custom-Attributes
+[sets]: https://github.com/nosoop/SM-TFCustAttr/wiki/Public-Custom-Attribute-Sets
 
 ## Why another API for custom weapon attributes?
 
@@ -45,16 +52,3 @@ through weapon drops.
 
 The particular implementation details may change in the future, as long as we can get
 information out of an entity in a persistent manner.
-
-## Writing attribute plugins
-
-Custom attributes are standard SourceMod plugins, so standard stuff applies.  However, there is
-one principle to keep in mind:
-
-Attributes are generally unknown until they matter.  This means that:
-
-* Attribute plugins shouldn't care about the attribute / entity mapping and lifecycle.
-That is the job of this framework.
-* Hooks should effectively be detours.  All entities that support the attribute should be
-checked if the attribute is present at runtime.
-* Attributes are potentially mutable.  Another plugin may remove or modify their value.
