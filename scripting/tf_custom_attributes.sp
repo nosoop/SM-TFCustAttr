@@ -49,6 +49,8 @@ public void OnPluginStart() {
 			ET_Event, Param_Cell, Param_Cell);
 	
 	g_AttributeKVRefs = new ArrayList();
+	
+	CreateConVar("tf2custattr_version", PLUGIN_VERSION, .flags = FCVAR_NOTIFY);
 }
 
 /**
