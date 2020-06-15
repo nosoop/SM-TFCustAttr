@@ -161,8 +161,8 @@ public Action GarbageCollectAttribute(Handle timer) {
  * Returns the KeyValues handle associated with an entity, if one exists.
  */
 KeyValues GetCustomAttributeStruct(int entity, bool validate) {
-	int ref = EntIndexToEntRef(entity);
-	int ent = EntRefToEntIndex(ref);
+	int ent = EntRefToEntIndex(entity);
+	int ref = EntIndexToEntRef(ent);
 	
 	Address pCustomAttr = GetCustomAttributeAddressInternal(entity);
 	if (pCustomAttr != Address_Null) {
@@ -181,8 +181,8 @@ KeyValues GetCustomAttributeStruct(int entity, bool validate) {
  * lookup in the plugin cache to avoid calling game functions.
  */
 static Address GetCustomAttributeAddressInternal(int entity) {
-	int ref = EntIndexToEntRef(entity);
-	int ent = EntRefToEntIndex(ref);
+	int ent = EntRefToEntIndex(entity);
+	int ref = EntIndexToEntRef(ent);
 	
 	// the main concern here is that I don't trust the cached address to not be invalidated,
 	// and if it is, reading the location might segfault
