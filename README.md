@@ -44,6 +44,27 @@ way that handles it similar to how the game does it:  you instead check for your
 attributes at runtime, when the game is doing something you might be interested in, and the
 attribute system handles storing the values for you.
 
+## How does this compare to the Hidden Dev Attributes plugin?
+
+The [hidden dev attributes plugin][] (or similar schema injection methods!) is *much* more
+optimal &mdash; I'd highly recommend taking advantage of the native attributes system if you
+can.  You can specify your own unique attribute classes and the game won't know the difference.
+
+The primary difference between the two is that Custom Attributes has no concept of "known"
+attributes, so you can insert arbitrary keys into items without external configuration (whereas
+native attributes need to exist in the in-memory schema, hence the injection process).
+
+Custom Attributes was started before extensive research was done on the in-memory schema, hence
+the "surrogate" method of installing a `KeyValues` handle into an existing attribute.
+
+In the future the Custom Attributes system may be a simple wrapper for native attributes, or
+just deprecated entirely (likely once string attribute support lands in TF2Attributes proper).
+
+Porting Custom Attributes-dependent plugins to native attributes is a fairly easy transition;
+it's a few native function swaps with the TF2Attributes equivalent.
+
+[hidden dev attributes plugin]: https://forums.alliedmods.net/showthread.php?t=326853
+
 ## How it works
 
 The current implementation leverages the existing attributes system (using TF2Attributes),
