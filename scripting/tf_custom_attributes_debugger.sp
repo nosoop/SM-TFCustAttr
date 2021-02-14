@@ -39,18 +39,31 @@ public Action ShowCustomAttributes(int client, int argc) {
 		return Plugin_Handled;
 	}
 	
-	ListAttributes(client, client);
+	int target = client;
+	if (argc > 0) {
+		char targetString[64];
+		GetCmdArg(1, targetString, sizeof(targetString));
+		
+		target = FindTarget(client, targetString, .immunity = false);
+		
+		if (!IsValidEntity(target)) {
+			ReplyToCommand(client, "Invalid target string '%s'.", targetString);
+			return Plugin_Handled;
+		}
+	}
+	
+	ListAttributes(client, target);
 
 #if defined _tf2wearables_included_
 	if (g_bWearablesLoaded) {
 		for (TF2LoadoutSlot i; i < TF2_LOADOUT_SLOT_COUNT; i++) {
-			ListAttributes(client, TF2_GetPlayerLoadoutSlot(client, i));
+			ListAttributes(client, TF2_GetPlayerLoadoutSlot(target, i));
 		}
 	} else
 #endif
 	{
 		for (int i; i < TFWeaponSlot_Item2 + 1; i++) {
-			ListAttributes(client, GetPlayerWeaponSlot(client, i));
+			ListAttributes(client, GetPlayerWeaponSlot(target, i));
 		}
 	}
 	
