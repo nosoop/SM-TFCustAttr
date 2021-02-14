@@ -31,6 +31,7 @@ bool g_bWearablesLoaded;
 public void OnPluginStart() {
 	RegAdminCmd("sm_custattr_show", ShowCustomAttributes, ADMFLAG_ROOT);
 	RegAdminCmd("sm_custattr_add", AddAttributeToWeapon, ADMFLAG_ROOT);
+	RegAdminCmd("sm_custattr_add_to", AddAttributeToTargetWeapon, ADMFLAG_ROOT);
 }
 
 public Action ShowCustomAttributes(int client, int argc) {
@@ -95,6 +96,38 @@ public Action AddAttributeToWeapon(int client, int argc) {
 	SetRuntimeCustomAttribute(activeWeapon, name, value);
 	ReplyToCommand(client, "Set attribute \"%s\" to value \"%s\" on active weapon.",
 			name, value);
+	return Plugin_Handled;
+}
+
+public Action AddAttributeToTargetWeapon(int client, int argc) {
+	if (argc < 3) {
+		ReplyToCommand(client, "Usage: sm_custattr_add_to [player] [name] [value]");
+		return Plugin_Handled;
+	}
+	
+	char targetString[MAX_NAME_LENGTH];
+	GetCmdArg(1, targetString, sizeof(targetString));
+	
+	int target = FindTarget(client, targetString, .immunity = false);
+	if (target < 1) {
+		ReplyToCommand(client, "This command can only be used on players.");
+		return Plugin_Handled;
+	}
+	
+	int activeWeapon = GetEntPropEnt(target, Prop_Send, "m_hActiveWeapon");
+	if (!IsValidEntity(activeWeapon)) {
+		ReplyToCommand(client, "Not holding any weapon.");
+		return Plugin_Handled;
+	}
+	
+	// There's no hard limit for these internally, but these should be fine in a practical sense
+	char name[128], value[256];
+	GetCmdArg(2, name, sizeof(name));
+	GetCmdArg(3, value, sizeof(value));
+	
+	TF2CustAttr_SetString(activeWeapon, name, value);
+	ReplyToCommand(client, "Set attribute \"%s\" to value \"%s\" on active weapon on %N.",
+			name, value, target);
 	return Plugin_Handled;
 }
 
