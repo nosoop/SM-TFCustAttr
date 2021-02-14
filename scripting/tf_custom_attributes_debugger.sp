@@ -29,9 +29,12 @@ bool g_bWearablesLoaded;
 #endif
 
 public void OnPluginStart() {
+	LoadTranslations("common.phrases");
+	
 	RegAdminCmd("sm_custattr_show", ShowCustomAttributes, ADMFLAG_ROOT);
 	RegAdminCmd("sm_custattr_add", AddAttributeToWeapon, ADMFLAG_ROOT);
 	RegAdminCmd("sm_custattr_add_to", AddAttributeToTargetWeapon, ADMFLAG_ROOT);
+	RegAdminCmd("sm_custattr_add_on", AddAttributeToTargetPlayers, ADMFLAG_ROOT);
 }
 
 public Action ShowCustomAttributes(int client, int argc) {
@@ -128,6 +131,30 @@ public Action AddAttributeToTargetWeapon(int client, int argc) {
 	TF2CustAttr_SetString(activeWeapon, name, value);
 	ReplyToCommand(client, "Set attribute \"%s\" to value \"%s\" on active weapon on %N.",
 			name, value, target);
+	return Plugin_Handled;
+}
+
+Action AddAttributeToTargetPlayers(int client, int argc) {
+	if (argc < 3) {
+		ReplyToCommand(client, "Usage: sm_custattr_add_on [target] [name] [value]");
+		return Plugin_Handled;
+	}
+	
+	char targets[64], name[128], value[256];
+	GetCmdArg(1, targets, sizeof(targets));
+	GetCmdArg(2, name, sizeof(name));
+	GetCmdArg(3, value, sizeof(value));
+	
+	char targetBuffer[64];
+	bool multiLang;
+	
+	int clients[MAXPLAYERS], nClients;
+	nClients = ProcessTargetString(targets, client, clients, sizeof(clients),
+			COMMAND_FILTER_ALIVE, targetBuffer, sizeof(targetBuffer), multiLang);
+	
+	for (int i; i < nClients; i++) {
+		TF2CustAttr_SetString(clients[i], name, value);
+	}
 	return Plugin_Handled;
 }
 
