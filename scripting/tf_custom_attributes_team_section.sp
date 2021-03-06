@@ -43,8 +43,6 @@ Action OnWeaponEquipPre(int client, int weapon) {
 	
 	KeyValues mergeKV = new KeyValues("merging");
 	
-	PrintToServer("has");
-	
 	// look through nested sections
 	weaponKV.GotoFirstSubKey(false);
 	bool hasNext;
