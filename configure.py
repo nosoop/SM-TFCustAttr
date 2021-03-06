@@ -6,6 +6,7 @@ plugins = [
 	'tf_custom_attributes.sp',
 	'tf_custom_attributes_debugger.sp',
 	'tf_custom_attributes_manager.sp',
+	'tf_custom_attributes_team_section.sp',
 ]
 
 # files to copy to builddir, relative to root
