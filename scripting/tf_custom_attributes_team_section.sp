@@ -45,24 +45,18 @@ Action OnWeaponEquipPre(int client, int weapon) {
 	
 	// look through nested sections
 	weaponKV.GotoFirstSubKey(false);
-	bool hasNext;
 	do {
 		char key[32];
 		weaponKV.GetSectionName(key, sizeof(key));
 		
 		// look into nested section
 		if (weaponKV.GetDataType(NULL_STRING) == KvData_None) {
-			bool recognized;
-			if (IsSectionNameValidForClient(client, key, recognized)) {
+			if (IsSectionNameValidForClient(client, key)) {
 				//use a merge instead of Import in case we have `n > 1` matching sections
 				KvMergeSubKeys(weaponKV, mergeKV);
 			}
-			// only remove sections that we've handled
-			hasNext = recognized? weaponKV.DeleteThis() == 1 : weaponKV.GotoNextKey(false);
-		} else {
-			hasNext = weaponKV.GotoNextKey(false);
 		}
-	} while (hasNext);
+	} while (weaponKV.GotoNextKey(false));
 	weaponKV.GoBack();
 	
 	KvMergeSubKeys(mergeKV, weaponKV);
@@ -77,18 +71,16 @@ Action OnWeaponEquipPre(int client, int weapon) {
 
 /**
  * Return `true` if the nested KV should be merged into the top level entry.
- * Set `recognized` to true if the section was handled and we can safely delete.
  */
-bool IsSectionNameValidForClient(int client, const char[] section, bool &recognized) {
-	TFTeam team = TF2_GetClientTeam(client);
-	if (StrEqual(section, "red")) {
-		recognized = true;
-		return team == TFTeam_Red;
-	} else if (StrEqual(section, "blue")) {
-		recognized = true;
-		return team == TFTeam_Blue;
+bool IsSectionNameValidForClient(int client, const char[] section) {
+	switch (TF2_GetClientTeam(client)) {
+		case TFTeam_Red: {
+			return StrEqual(section, "red");
+		}
+		case TFTeam_Blue: {
+			return StrEqual(section, "blue");
+		}
 	}
-	recognized = false;
 	return false;
 }
 
