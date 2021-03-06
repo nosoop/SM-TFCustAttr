@@ -38,7 +38,6 @@ public void OnClientPutInServer(int client) {
 Action OnWeaponEquipPre(int client, int weapon) {
 	KeyValues weaponKV = TF2CustAttr_GetAttributeKeyValues(weapon);
 	if (!weaponKV) {
-		PrintToServer("no weapon KV for %N / %d", client, weapon);
 		return Plugin_Continue;
 	}
 	
