@@ -13,6 +13,7 @@
 #include <sdkhooks>
 #include <tf2_stocks>
 #include <tf_custom_attributes>
+#include <tf2utils>
 
 #define PLUGIN_VERSION "1.0.0"
 public Plugin myinfo = {
@@ -21,6 +22,10 @@ public Plugin myinfo = {
 	description = "Allows for embedding team-specific subsections for Custom Attributes.",
 	version = PLUGIN_VERSION,
 	url = "https://github.com/nosoop/SM-TFCustAttr"
+}
+
+public void OnPluginStart() {
+	HookUserMessage(GetUserMessageId("PlayerLoadoutUpdated"), OnPlayerLoadoutUpdated);
 }
 
 public void OnMapStart() {
@@ -32,10 +37,41 @@ public void OnMapStart() {
 }
 
 public void OnClientPutInServer(int client) {
-	SDKHook(client, SDKHook_WeaponEquip, OnWeaponEquipPre);
+	SDKHook(client, SDKHook_WeaponEquip, OnEconItemEquipPre);
 }
 
-Action OnWeaponEquipPre(int client, int weapon) {
+/**
+ * Refresh player loadouts in case we've switched teams.
+ * 
+ * Ideally we could hook CTFWeaponBase::ChangeTeam() instead, but I don't feel like bringing in
+ * DHooks today.
+ */
+Action OnPlayerLoadoutUpdated(UserMsg msg_id, BfRead msg, const int[] players,
+		int playersNum, bool reliable, bool init) {
+	int client = msg.ReadByte();
+	
+	int numWeapons = GetEntPropArraySize(client, Prop_Send, "m_hMyWeapons");
+	for (int i; i < numWeapons; i++) {
+		int weapon = GetEntPropEnt(client, Prop_Send, "m_hMyWeapons", i);
+		if (!IsValidEntity(weapon)) {
+			continue;
+		}
+		
+		OnEconItemEquipPre(client, weapon);
+	}
+	
+	int numWearables = TF2Util_GetPlayerWearableCount(client);
+	for (int i; i < numWearables; i++) {
+		int wearable = TF2Util_GetPlayerWearable(client, i);
+		if (!IsValidEntity(wearable)) {
+			continue;
+		}
+		
+		OnEconItemEquipPre(client, wearable);
+	}
+}
+
+Action OnEconItemEquipPre(int client, int weapon) {
 	KeyValues weaponKV = TF2CustAttr_GetAttributeKeyValues(weapon);
 	if (!weaponKV) {
 		return Plugin_Continue;
