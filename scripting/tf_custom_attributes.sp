@@ -12,7 +12,7 @@
 
 #pragma newdecls required
 
-#define PLUGIN_VERSION "0.4.0"
+#define PLUGIN_VERSION "0.4.1"
 public Plugin myinfo = {
 	name = "[TF2] Custom Attributes",
 	author = "nosoop",
@@ -336,6 +336,7 @@ stock void KvSweepEmptyKeys(KeyValues kv) {
 	bool bNext;
 	do {
 		if (kv.GetDataType(NULL_STRING) == KvData_None) {
+			bNext = kv.GotoNextKey(false);
 			continue;
 		}
 		// plain key / value pair
