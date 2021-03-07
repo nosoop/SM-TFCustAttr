@@ -15,7 +15,7 @@
 #include <tf_custom_attributes>
 #include <tf2utils>
 
-#define PLUGIN_VERSION "1.0.0"
+#define PLUGIN_VERSION "1.1.0"
 public Plugin myinfo = {
 	name = "[TF2] Custom Attribute Team Subsection Handler",
 	author = "nosoop",
