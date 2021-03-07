@@ -12,7 +12,7 @@
 
 #pragma newdecls required
 
-#define PLUGIN_VERSION "0.3.2"
+#define PLUGIN_VERSION "0.4.0"
 public Plugin myinfo = {
 	name = "[TF2] Custom Attributes",
 	author = "nosoop",
@@ -183,6 +183,7 @@ public int Native_UseCustomKV(Handle caller, int argc) {
 	KeyValues kv = GetNativeCell(2);
 	
 	KeyValues customAttributes = KeyValuesCopyView(kv, "CustomAttributes");
+	KvSweepEmptyKeys(customAttributes);
 	SetCustomAttributeStruct(entity, customAttributes);
 	
 	return 1;
@@ -328,6 +329,21 @@ KeyValues InitAttributeRuntimeStruct(int entity) {
 void SetCustomAttributeStruct(int entity, KeyValues kv) {
 	TF2Attrib_SetByDefIndex(entity, ATTRID_CUSTOM_STORAGE, view_as<float>(kv));
 	g_AttributeKVRefs.Push(kv);
+}
+
+stock void KvSweepEmptyKeys(KeyValues kv) {
+	kv.GotoFirstSubKey(false);
+	bool bNext;
+	do {
+		if (kv.GetDataType(NULL_STRING) == KvData_None) {
+			continue;
+		}
+		// plain key / value pair
+		char value[4];
+		kv.GetString(NULL_STRING, value, sizeof(value));
+		bNext = !value[0]? kv.DeleteThis() == 1 : kv.GotoNextKey(false);
+	} while (bNext);
+	kv.GoBack();
 }
 
 /**
