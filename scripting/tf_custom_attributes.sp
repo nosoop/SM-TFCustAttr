@@ -27,6 +27,8 @@ Handle g_OnAttributeKVAdded;
 
 ArrayList g_AttributeKVRefs;
 
+StringMap g_EntityClassHasAttributeMapping;
+
 public APLRes AskPluginLoad2(Handle self, bool late, char[] error, int maxlen) {
 	RegPluginLibrary("tf2custattr");
 	
@@ -49,6 +51,7 @@ public void OnPluginStart() {
 			ET_Event, Param_Cell, Param_Cell);
 	
 	g_AttributeKVRefs = new ArrayList();
+	g_EntityClassHasAttributeMapping = new StringMap();
 	
 	CreateConVar("tf2custattr_version", PLUGIN_VERSION, .flags = FCVAR_NOTIFY);
 }
@@ -82,7 +85,13 @@ public void OnMapEnd() {
 }
 
 public void OnEntityCreated(int entity, const char[] className) {
-	if (HasEntProp(entity, Prop_Send, "m_AttributeList")) {
+	bool bHasAttributeList;
+	if (!g_EntityClassHasAttributeMapping.GetValue(className, bHasAttributeList)) {
+		bHasAttributeList = HasEntProp(entity, Prop_Send, "m_AttributeList");
+		g_EntityClassHasAttributeMapping.SetValue(className, bHasAttributeList);
+	}
+	
+	if (bHasAttributeList) {
 		SDKHook(entity, SDKHook_SpawnPost, OnItemAttributeSpawnPost);
 	}
 }
