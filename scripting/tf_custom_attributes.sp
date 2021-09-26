@@ -85,6 +85,10 @@ public void OnMapEnd() {
 }
 
 public void OnEntityCreated(int entity, const char[] className) {
+	if (!GetForwardFunctionCount(g_OnAttributeKVAdded)) {
+		return;
+	}
+	
 	bool bHasAttributeList;
 	if (!g_EntityClassHasAttributeMapping.GetValue(className, bHasAttributeList)) {
 		bHasAttributeList = HasEntProp(entity, Prop_Send, "m_AttributeList");
