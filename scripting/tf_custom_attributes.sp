@@ -10,6 +10,8 @@
 #include <sdktools>
 #include <tf2attributes>
 
+#include <dhooks>
+
 #pragma newdecls required
 
 #define PLUGIN_VERSION "0.4.1"
@@ -26,8 +28,6 @@ public Plugin myinfo = {
 Handle g_OnAttributeKVAdded;
 
 ArrayList g_AttributeKVRefs;
-
-StringMap g_EntityClassHasAttributeMapping;
 
 public APLRes AskPluginLoad2(Handle self, bool late, char[] error, int maxlen) {
 	RegPluginLibrary("tf2custattr");
@@ -47,11 +47,24 @@ public APLRes AskPluginLoad2(Handle self, bool late, char[] error, int maxlen) {
 }
 
 public void OnPluginStart() {
+	Handle hGameConf = LoadGameConfigFile("tf2.custattr");
+	if (!hGameConf) {
+		SetFailState("Failed to load gamedata (tf2.custattr).");
+	}
+	
+	Handle dtEconEntityInitAttributes = DHookCreateFromConf(hGameConf, "CEconEntity::InitializeAttributes()");
+	if (!dtEconEntityInitAttributes) {
+		SetFailState("Failed to create detour " ... "CEconEntity::InitializeAttributes()");
+	}
+	DHookEnableDetour(dtEconEntityInitAttributes, true, OnEconInitAttributesPost);
+	
+	delete hGameConf;
+	
+	
 	g_OnAttributeKVAdded = CreateGlobalForward("TF2CustAttr_OnKeyValuesAdded",
 			ET_Event, Param_Cell, Param_Cell);
 	
 	g_AttributeKVRefs = new ArrayList();
-	g_EntityClassHasAttributeMapping = new StringMap();
 	
 	CreateConVar("tf2custattr_version", PLUGIN_VERSION, .flags = FCVAR_NOTIFY);
 }
@@ -84,20 +97,15 @@ public void OnMapEnd() {
 	EraseAttributeStructure();
 }
 
-public void OnEntityCreated(int entity, const char[] className) {
+public void OnClientPutInServer(int client) {
 	if (!GetForwardFunctionCount(g_OnAttributeKVAdded)) {
 		return;
 	}
-	
-	bool bHasAttributeList;
-	if (!g_EntityClassHasAttributeMapping.GetValue(className, bHasAttributeList)) {
-		bHasAttributeList = HasEntProp(entity, Prop_Send, "m_AttributeList");
-		g_EntityClassHasAttributeMapping.SetValue(className, bHasAttributeList);
-	}
-	
-	if (bHasAttributeList) {
-		SDKHook(entity, SDKHook_SpawnPost, OnItemAttributeSpawnPost);
-	}
+	SDKHook(client, SDKHook_SpawnPost, OnItemAttributeSpawnPost);
+}
+
+MRESReturn OnEconInitAttributesPost(int entity) {
+	OnItemAttributeSpawnPost(entity);
 }
 
 /**
@@ -105,7 +113,7 @@ public void OnEntityCreated(int entity, const char[] className) {
  * If no custom attributes are present on an entity after the forward, the KeyValues handle is
  * cleaned up.
  */
-public void OnItemAttributeSpawnPost(int entity) {
+void OnItemAttributeSpawnPost(int entity) {
 	Address pCustomAttrib = TF2Attrib_GetByDefIndex(entity, ATTRID_CUSTOM_STORAGE);
 	
 	if (!pCustomAttrib) {

@@ -1,0 +1,24 @@
+"Games"
+{
+	"tf"
+	{
+		"Functions"
+		{
+			"CEconEntity::InitializeAttributes()"
+			{
+				"signature"	"CEconEntity::InitializeAttributes()"
+				"callconv"	"thiscall"
+				"return"	"void"
+				"this"		"entity"
+			}
+		}
+		"Signatures"
+		{
+			"CEconEntity::InitializeAttributes()"
+			{
+				"library"	"server"
+				"linux"		"@_ZN11CEconEntity20InitializeAttributesEv"
+			}
+		}
+	}
+}

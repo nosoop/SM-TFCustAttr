@@ -12,6 +12,7 @@ plugins = [
 # files to copy to builddir, relative to root
 # plugin names from previous list will be copied automatically
 copy_files = [
+	'gamedata/tf2.custattr.txt',
 	'scripting/include/tf_custom_attributes.inc'
 ]
 
