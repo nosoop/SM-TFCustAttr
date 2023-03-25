@@ -37,7 +37,7 @@ project repository, and the [Public Custom Attribute Sets page][sets] has the so
 
 ## Why another API for custom weapon attributes?
 
-I disliked the existing approach as an attribute developer.
+I disliked the (at the time) existing approach as an attribute developer.
 
 In every iteration of Custom Weapons that I'm aware of, you get one forward that tells you when
 a weapon requests an attribute:  `CustomWeaponsTF_OnAddAttribute` (or `CW3_OnAddAttribute`).
@@ -77,6 +77,17 @@ function swaps with the TF2Attributes equivalent, plus defining the attribute cl
 added to the schema.
 
 [hidden dev attributes plugin]: https://forums.alliedmods.net/showthread.php?t=326853
+
+## How does this compare to the TF2 Econ Dynamic extension?
+
+[TF2 Econ Dynamic][] is intended to be the successor in a sense, since it is a schema injection
+method as Hidden Dev Attributes is.
+
+What it brings to the table is the ability for attribute authors to self-register attributes, so
+getting things up and running requires fewer steps for both developers and server operators
+alike in the simple case.
+
+[TF2 Econ Dynamic]: https://github.com/nosoop/SMExt-TFEconDynamic
 
 ## How it works
 
