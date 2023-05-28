@@ -12,7 +12,7 @@
 
 #pragma newdecls required
 
-#define PLUGIN_VERSION "0.4.1"
+#define PLUGIN_VERSION "0.5.0"
 public Plugin myinfo = {
 	name = "[TF2] Custom Attributes",
 	author = "nosoop",
@@ -24,6 +24,7 @@ public Plugin myinfo = {
 #define ATTRID_CUSTOM_STORAGE 192 // "referenced item id low"
 
 Handle g_OnAttributeKVAdded;
+Handle g_OnAttributesChanged;
 
 ArrayList g_AttributeKVRefs;
 
@@ -47,6 +48,8 @@ public APLRes AskPluginLoad2(Handle self, bool late, char[] error, int maxlen) {
 public void OnPluginStart() {
 	g_OnAttributeKVAdded = CreateGlobalForward("TF2CustAttr_OnKeyValuesAdded",
 			ET_Event, Param_Cell, Param_Cell);
+	g_OnAttributesChanged = CreateGlobalForward("TF2CustAttr_OnAttributesChanged",
+			ET_Ignore, Param_Cell);
 	
 	g_AttributeKVRefs = new ArrayList();
 	
@@ -107,6 +110,10 @@ public void OnItemAttributeSpawnPost(int entity) {
 		
 		if (result > Plugin_Continue) {
 			SetCustomAttributeStruct(entity, customAttributes);
+			
+			Call_StartForward(g_OnAttributesChanged);
+			Call_PushCell(entity);
+			Call_Finish();
 		} else {
 			delete customAttributes;
 		}
@@ -186,6 +193,10 @@ public int Native_UseCustomKV(Handle caller, int argc) {
 	KvSweepEmptyKeys(customAttributes);
 	SetCustomAttributeStruct(entity, customAttributes);
 	
+	Call_StartForward(g_OnAttributesChanged);
+	Call_PushCell(entity);
+	Call_Finish();
+	
 	return 1;
 }
 
@@ -247,6 +258,10 @@ public int Native_SetAttributeValueInt(Handle caller, int argc) {
 	
 	int value = GetNativeCell(3);
 	kv.SetNum(attr, value);
+	
+	Call_StartForward(g_OnAttributesChanged);
+	Call_PushCell(entity);
+	Call_Finish();
 }
 
 public int Native_SetAttributeValueFloat(Handle caller, int argc) {
@@ -261,6 +276,10 @@ public int Native_SetAttributeValueFloat(Handle caller, int argc) {
 	
 	float value = GetNativeCell(3);
 	kv.SetFloat(attr, value);
+	
+	Call_StartForward(g_OnAttributesChanged);
+	Call_PushCell(entity);
+	Call_Finish();
 }
 
 public int Native_SetAttributeValueString(Handle caller, int argc) {
@@ -279,6 +298,10 @@ public int Native_SetAttributeValueString(Handle caller, int argc) {
 	GetNativeString(3, buf, len);
 	
 	kv.SetString(attr, buf);
+	
+	Call_StartForward(g_OnAttributesChanged);
+	Call_PushCell(entity);
+	Call_Finish();
 }
 
 /**

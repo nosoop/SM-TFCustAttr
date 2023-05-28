@@ -33,6 +33,12 @@ native KeyValues TF2CustAttr_GetAttributeKeyValues(int entity);
 native bool TF2CustAttr_UseKeyValues(int entity, KeyValues kv);
 
 /**
+ * Called whenever a operation occurs that changes the attributes attached to the entity.
+ * Note that this is not called when an entity's owner changes (such as on weapon pickup).
+ */
+forward void TF2CustAttr_OnAttributesChanged(int entity);
+
+/**
  * Returns an entity's custom attribute's integer value, or `iDefaultValue` if the entity does
  * not have the attribute.
  */
