@@ -6,9 +6,12 @@
 #pragma semicolon 1
 #include <sourcemod>
 
+#include <dhooks>
 #include <sdkhooks>
 #include <sdktools>
+
 #include <tf2attributes>
+#include <dhooks_gameconf_shim>
 
 #pragma newdecls required
 
@@ -56,6 +59,22 @@ public void OnPluginStart() {
 	
 	CreateConVar("tf2custattr_version", PLUGIN_VERSION, .flags = FCVAR_NOTIFY);
 	
+	GameData hGameConf = LoadGameConfigFile("tf2.custattr");
+	if (!hGameConf) {
+		SetFailState("Failed to load gamedata (tf2.custattr).");
+	} else if (!ReadDHooksDefinitions("tf2.custattr", "FunctionHooks")) {
+		SetFailState("Failed to load DHooks definitions (tf2.custattr)");
+	}
+	
+	DynamicDetour dtInitializeAttributes = GetDHooksDetourDefinition(hGameConf,
+			"CEconEntity::InitializeAttributes()");
+	if (!dtInitializeAttributes) {
+		SetFailState("Failed to create detour " ... "CEconEntity::InitializeAttributes()");
+	}
+	dtInitializeAttributes.Enable(Hook_Post, OnAttributeInitPost);
+	
+	delete hGameConf;
+	
 	g_HasAttributeMap = new StringMap();
 }
 
@@ -87,18 +106,12 @@ public void OnMapEnd() {
 	EraseAttributeStructure();
 }
 
-public void OnEntityCreated(int entity, const char[] className) {
-	if (EntityHasAttributes(entity)) {
-		SDKHook(entity, SDKHook_SpawnPost, OnItemAttributeSpawnPost);
-	}
-}
-
 /**
  * An entity has been spawned.  Check if any custom attributes should be added.
  * If no custom attributes are present on an entity after the forward, the KeyValues handle is
  * cleaned up.
  */
-public void OnItemAttributeSpawnPost(int entity) {
+MRESReturn OnAttributeInitPost(int entity) {
 	Address pCustomAttrib = TF2Attrib_GetByDefIndex(entity, ATTRID_CUSTOM_STORAGE);
 	
 	if (!pCustomAttrib) {
@@ -121,6 +134,7 @@ public void OnItemAttributeSpawnPost(int entity) {
 			delete customAttributes;
 		}
 	}
+	return MRES_Ignored;
 }
 
 /**

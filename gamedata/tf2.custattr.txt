@@ -1,0 +1,30 @@
+"Games"
+{
+	"tf"
+	{
+		/**
+		 * This is not a typo - "FunctionHooks" is used to avoid collisions with DHooks'
+		 * global registry.
+		 */
+		"FunctionHooks"
+		{
+			"CEconEntity::InitializeAttributes()"
+			{
+				"signature"		"CEconEntity::InitializeAttributes()"
+				"callconv"		"thiscall"
+				"return"		"void"
+				"this"			"entity"
+			}
+		}
+		
+		"Signatures"
+		{
+			"CEconEntity::InitializeAttributes()"
+			{
+				"library"	"server"
+				"linux"		"@_ZN11CEconEntity20InitializeAttributesEv"
+				"windows"	"\x55\x8B\xEC\x51\x56\x57\x8B\xF9\x8B\x87\x2A\x2A\x00\x00\x8D\x8F\x2A\x2A\x00\x00"
+			}
+		}
+	}
+}
