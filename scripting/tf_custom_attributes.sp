@@ -26,6 +26,7 @@ public Plugin myinfo = {
 Handle g_OnAttributeKVAdded;
 Handle g_OnAttributesChanged;
 
+StringMap g_HasAttributeMap;
 ArrayList g_AttributeKVRefs;
 
 public APLRes AskPluginLoad2(Handle self, bool late, char[] error, int maxlen) {
@@ -54,6 +55,8 @@ public void OnPluginStart() {
 	g_AttributeKVRefs = new ArrayList();
 	
 	CreateConVar("tf2custattr_version", PLUGIN_VERSION, .flags = FCVAR_NOTIFY);
+	
+	g_HasAttributeMap = new StringMap();
 }
 
 /**
@@ -62,7 +65,7 @@ public void OnPluginStart() {
 public void OnPluginEnd() {
 	int entity = -1;
 	while ((entity = FindEntityByClassname(entity, "*")) != -1) {
-		if (!HasEntProp(entity, Prop_Send, "m_AttributeList")) {
+		if (!EntityHasAttributes(entity)) {
 			continue;
 		}
 		
@@ -85,7 +88,7 @@ public void OnMapEnd() {
 }
 
 public void OnEntityCreated(int entity, const char[] className) {
-	if (HasEntProp(entity, Prop_Send, "m_AttributeList")) {
+	if (EntityHasAttributes(entity)) {
 		SDKHook(entity, SDKHook_SpawnPost, OnItemAttributeSpawnPost);
 	}
 }
@@ -136,7 +139,7 @@ public Action GarbageCollectAttribute(Handle timer) {
 	ArrayList savedAttributes = new ArrayList();
 	int entity = -1;
 	while ((entity = FindEntityByClassname(entity, "*")) != -1) {
-		if (!HasEntProp(entity, Prop_Send, "m_AttributeList")) {
+		if (!EntityHasAttributes(entity)) {
 			continue;
 		}
 		
@@ -352,6 +355,20 @@ KeyValues InitAttributeRuntimeStruct(int entity) {
 void SetCustomAttributeStruct(int entity, KeyValues kv) {
 	TF2Attrib_SetByDefIndex(entity, ATTRID_CUSTOM_STORAGE, view_as<float>(kv));
 	g_AttributeKVRefs.Push(kv);
+}
+
+bool EntityHasAttributes(int entity) {
+	char className[64];
+	if (!GetEntityClassname(entity, className, sizeof(className))) {
+		return false;
+	}
+	
+	bool result;
+	if (!g_HasAttributeMap.GetValue(className, result)) {
+		result = HasEntProp(entity, Prop_Send, "m_AttributeList");
+		g_HasAttributeMap.SetValue(className, result);
+	}
+	return result != 0;
 }
 
 stock void KvSweepEmptyKeys(KeyValues kv) {
