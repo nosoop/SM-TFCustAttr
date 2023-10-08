@@ -279,6 +279,7 @@ public int Native_SetAttributeValueInt(Handle caller, int argc) {
 	Call_StartForward(g_OnAttributesChanged);
 	Call_PushCell(entity);
 	Call_Finish();
+	return 0;
 }
 
 public int Native_SetAttributeValueFloat(Handle caller, int argc) {
@@ -297,6 +298,7 @@ public int Native_SetAttributeValueFloat(Handle caller, int argc) {
 	Call_StartForward(g_OnAttributesChanged);
 	Call_PushCell(entity);
 	Call_Finish();
+	return 0;
 }
 
 public int Native_SetAttributeValueString(Handle caller, int argc) {
@@ -319,6 +321,7 @@ public int Native_SetAttributeValueString(Handle caller, int argc) {
 	Call_StartForward(g_OnAttributesChanged);
 	Call_PushCell(entity);
 	Call_Finish();
+	return 0;
 }
 
 /**
@@ -382,7 +385,7 @@ bool EntityHasAttributes(int entity) {
 		result = HasEntProp(entity, Prop_Send, "m_AttributeList");
 		g_HasAttributeMap.SetValue(className, result);
 	}
-	return result != 0;
+	return result != false;
 }
 
 stock void KvSweepEmptyKeys(KeyValues kv) {
