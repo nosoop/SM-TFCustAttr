@@ -5,6 +5,8 @@
 		/**
 		 * This is not a typo - "FunctionHooks" is used to avoid collisions with DHooks'
 		 * global registry.
+		 * 
+		 * See https://gist.github.com/nosoop/df8f18de68c80004d2eb981ece1597d4
 		 */
 		"FunctionHooks"
 		{

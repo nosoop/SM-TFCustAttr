@@ -1,3 +1,11 @@
+> [!NOTE]
+> This project has effectively been retired.  Users are encouraged to use [TF2 Econ Dynamic][]
+> if they plan on creating new attributes, as it fully integrates into the game's own attribute
+> ecosystem.
+> 
+> Since there's still a wealth of plugins using this system, this plugin will still be in
+> maintenance mode.
+
 # Custom Attribute Framework
 
 A custom attribute system for Team Fortress 2.
